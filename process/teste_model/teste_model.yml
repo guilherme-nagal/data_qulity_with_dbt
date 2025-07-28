@@ -1,0 +1,16 @@
+version: 2
+
+models:
+  - name: teste_model
+    description: "Standardized event data from raw sources"
+    columns:
+      - name: product_id
+        description: "Unique identifier for a product"
+        tests:
+          - not_null
+          - unique
+          - accepted_values:
+              values: [2]
+
+      - name: message
+        description: "Type of event recorded (click, purchase, etc.)"

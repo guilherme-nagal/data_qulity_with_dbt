@@ -1,0 +1,11 @@
+sources:
+  - name: raw
+    schema: raw
+    tables:
+      - name: products
+        tests:
+          - not_null:
+              column_name: product_id
+          - unique:
+              column_name: product_id
+          

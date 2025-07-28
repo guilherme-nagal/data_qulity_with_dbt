@@ -1,0 +1,91 @@
+version: 2
+
+models:
+  - name: stg_customers
+    description: "Cleaned and standardized customer data for analytical use."
+    columns:
+      - name: customer_id
+        description: "Unique identifier for the customer."
+        tests:
+          - not_null
+          - unique
+
+      - name: first_name
+        description: "Cleaned and formatted full name of the customer."
+        tests:
+          - not_null
+      
+      - name: last_name
+        description: "Cleaned and formatted full name of the customer."
+        tests:
+          - not_null
+
+      - name: email
+        description: "Validated and cleaned email address."
+        tests:
+        - not_null
+
+      - name: phone
+        description: "Customer phone number with extra spaces removed."
+
+      - name: birth_date
+        description: "Parsed birth date from string to date format."
+        tests:
+          - not_null
+
+      - name: created_at
+        description: "Timestamp when the customer was created in the system."
+        tests:
+          - not_null
+
+      - name: updated_at
+        description: "Timestamp of the last update."
+        tests:
+          - not_null
+
+      - name: is_active
+        description: "Flag indicating if the customer is active (0 or 1)."
+        tests:
+          - not_null
+          - accepted_values:
+              values: [0, 1]
+
+      - name: gender
+        description: "Normalized gender value (M, F, or Other)."
+        tests:
+          - accepted_values:
+              values: ['M', 'F', 'Other', "Undefined"]
+
+      - name: cpf
+        description: "Brazilian CPF number with punctuation removed."
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_value_lengths_to_equal:
+              value: 11
+
+      - name: address
+        description: "Cleaned address with no line breaks or excessive spaces."
+
+      - name: city
+        description: "Properly capitalized city name."
+        tests:
+          - not_null
+
+      - name: state
+        description: "Two-letter Brazilian state code."
+        tests:
+          - accepted_values:
+              values: ['SP', 'RJ', 'BA', 'MG', 'SC']
+
+      - name: zip_code
+        description: "Numeric-only postal code (CEP)."
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_value_lengths_to_equal:
+              value: 8
+
+      - name: origin
+        description: "Source from which the customer was acquired."
+        tests:
+          - accepted_values:
+              values: ['indicação', 'email', 'facebook', 'google', 'instagram']

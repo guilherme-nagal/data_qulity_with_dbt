@@ -1,0 +1,12 @@
+sources:
+  - name: raw
+    schema: raw
+    tables:
+      - name: customer_names
+        tests:
+          - not_null:
+              column_name: id
+          - unique:
+              column_name: id
+          - not_null:
+              column_name: name_part

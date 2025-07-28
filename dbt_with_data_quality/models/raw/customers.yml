@@ -1,0 +1,12 @@
+sources:
+  - name: raw
+    schema: raw
+    tables:
+      - name: customers
+        tests:
+          - not_null:
+              column_name: customer_id
+          - unique:
+              column_name: customer_id
+          # - contains_first_and_last_name:
+          #     column_name: name

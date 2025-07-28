@@ -1,0 +1,76 @@
+version: 2
+
+models:
+  - name: stg_products
+    description: "Cleaned and transformed product data with standardized categories and prices."
+    columns:
+      - name: product_id
+        description: "Unique identifier for the product."
+        tests:
+          - not_null
+          - unique
+
+      - name: name
+        description: "Product name with trimmed spaces and proper casing."
+        tests:
+          - not_null
+
+      - name: description
+        description: "Optional product description (nullable)."
+
+      - name: category
+        description: "Standardized product category (e.g., Electronics, Books, Clothing)."
+        tests:
+          - accepted_values:
+              values: ['Eletrônicos', 'Livros', 'Roupas']
+
+      - name: price
+        description: "Price converted to float and ensured to be non-negative."
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              strictly: false
+
+      - name: quantity
+        description: "Product quantity with nulls and negatives replaced by 0."
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+
+      - name: created_at
+        description: "Datetime when the product was created."
+        tests:
+          - not_null
+
+      - name: updated_at
+        description: "Datetime when the product was last updated."
+        tests:
+          - not_null
+
+      - name: is_active
+        description: "Boolean flag indicating whether the product is active."
+        tests:
+          - not_null
+          - accepted_values:
+              values: [0, 1]
+
+      - name: brand
+        description: "Standardized brand name (Samsung, Apple, LG, etc.)."
+        tests:
+          - accepted_values:
+              values: ['Samsung', 'Apple', 'LG', 'Nike', 'Adidas']
+
+      - name: ean
+        description: "EAN barcode standardized to 13 digits."
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_value_lengths_to_equal:
+              value: 13
+
+      - name: weight
+        description: "Weight converted to float. Invalid or empty strings are treated as null."
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+  

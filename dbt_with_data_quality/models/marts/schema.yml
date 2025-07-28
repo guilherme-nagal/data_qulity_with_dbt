@@ -1,0 +1,18 @@
+version: 2
+
+models:
+  - name: dim_products
+    description: "Dimensão final de produtos prontos para análise"
+    columns:
+      - name: product_id
+        tests:
+          - not_null
+          - unique
+
+  - name: dim_customers
+    description: "Dimensão final de clientes prontos para análise"
+    columns:
+      - name: customer_id
+        tests:
+          - not_null
+          - unique
