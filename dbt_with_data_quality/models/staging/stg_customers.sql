@@ -36,25 +36,16 @@ WITH
     SELECT
         CAST(customer_id AS Int64) AS customer_id,
         
-        -- Nome: lowercase, sem espaços extras
-        replaceRegexpAll(
-            trimBoth(lowerUTF8(
-                multiIf(
-                position(name, '.') > 0,
-                substring(name, position(name, '.') + 1),
-                name
-                )
-            )),
-            '\\s+', ' '
-        ) AS name,
+        -- Nome
+        {{ clean_name("name") }} AS name,
 
-        -- Email: substituir vírgula por ponto
+        -- Email
         replaceAll(email, ',', '.') AS email_raw,
-        
-        -- Domínio detectado
+
+        -- Domínio
         arrayFilter(x -> position(email, x) > 0, d.lista) AS dom_encontrado,
 
-        -- Correção do email se estiver sem @
+        -- Correção do email
         CASE
             WHEN position(email, '@') = 0 AND length(arrayFilter(x -> position(email, x) > 0, d.lista)) > 0 THEN
                 concat(
@@ -65,13 +56,13 @@ WITH
             ELSE replaceAll(email, ',', '.')
         END AS email_corrigido,
 
-        -- Flag: email válido simples
+        -- Email válido?
         (position(email_corrigido, '@') > 0 AND position(email_corrigido, '.') > 0) AS email_valid_flag,
 
-        -- Phone: remover caracteres não numéricos
+        -- Apenas dígitos no telefone
         replaceRegexpAll(phone, '[^0-9]', '') AS phone_digits,
 
-        -- Birth: tentativa de parse
+        -- Data de nascimento
         parseDateTimeBestEffortOrNull(birth) AS birth_date,
 
         -- Datas
@@ -89,8 +80,8 @@ WITH
             ELSE 'Undefined'
         END AS gender,
 
-        -- CPF: limpar e marcar inválido
-        NULLIF(replaceRegexpAll(cpf, '[^0-9]', ''), '00000000000') AS cpf,
+        -- CPF tratado
+        {{ clean_cpf("cpf") }} AS cpf,
 
         -- Endereço
         trimBoth(replace(address, '\n', ', ')) AS address,
@@ -115,17 +106,10 @@ WITH
   final_customers AS (
     SELECT
       *,
-      -- Phone formatado
-      CASE
-        WHEN phone_digits = '' OR phone_digits IS NULL THEN NULL
-        WHEN startsWith(phone_digits, '550') THEN concat('+55', substring(phone_digits, 3))
-        WHEN startsWith(phone_digits, '55') AND length(phone_digits) > 11 THEN concat('+', phone_digits)
-        WHEN length(phone_digits) = 11 THEN concat('+55', phone_digits)
-        WHEN length(phone_digits) = 10 THEN concat('+55', phone_digits)
-        ELSE concat('+55', phone_digits)
-      END AS phone
+      {{ format_brazilian_phone("phone_digits") }} AS phone
     FROM cleaned_base
   ),
+
   first_last_name AS (
     SELECT
       c.*,
@@ -135,6 +119,7 @@ WITH
     JOIN bix.stg_customer_names AS p1 ON startsWith(c.name, lowerUTF8(p1.name_part))
     JOIN bix.stg_customer_names AS p2 ON endsWith(c.name, lowerUTF8(p2.name_part))
   ),
+
   first_last_name_group AS (
     SELECT
         customer_id,
@@ -158,8 +143,7 @@ WITH
         any(origin) AS origin
     FROM first_last_name
     GROUP BY customer_id
-    )
-
+  )
 
 SELECT
   customer_id,
