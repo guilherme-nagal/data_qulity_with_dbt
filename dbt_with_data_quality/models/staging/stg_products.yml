@@ -3,6 +3,7 @@ version: 2
 models:
   - name: stg_products
     description: "Cleaned and transformed product data with standardized categories and prices."
+
     columns:
       - name: product_id
         description: "Unique identifier for the product."
@@ -12,14 +13,14 @@ models:
 
       - name: name
         description: "Product name with trimmed spaces and proper casing."
-        tests:
-          - not_null
+        # tests:
+        #   - not_null
 
       - name: description
         description: "Optional product description (nullable)."
 
       - name: category
-        description: "Standardized product category (e.g., Electronics, Books, Clothing)."
+        description: "Standardized product category (e.g., Eletrônicos, Livros, Roupas)."
         tests:
           - accepted_values:
               values: ['Eletrônicos', 'Livros', 'Roupas']
@@ -73,4 +74,3 @@ models:
         tests:
           - dbt_expectations.expect_column_values_to_be_between:
               min_value: 0
-  

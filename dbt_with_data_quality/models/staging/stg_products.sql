@@ -21,7 +21,7 @@ SELECT
   {{ standardize_category("category") }} AS category,
 
   -- Preço limpo
-  {{ clean_price("price") }} AS price,
+  COALESCE({{ clean_price("price") }}, 0) AS price,
 
   -- Quantidade
   IF(quantity IS NULL OR quantity < 0, 0, quantity) AS quantity,

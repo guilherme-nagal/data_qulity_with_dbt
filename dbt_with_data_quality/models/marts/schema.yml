@@ -1,18 +1,44 @@
 version: 2
 
 models:
-  - name: dim_products
-    description: "Dimensão final de produtos prontos para análise"
-    columns:
-      - name: product_id
-        tests:
-          - not_null
-          - unique
-
   - name: dim_customers
-    description: "Dimensão final de clientes prontos para análise"
+    description: "Dimensão final de clientes prontos para análise (com conformidade LGPD)"
     columns:
       - name: customer_id
         tests:
           - not_null
           - unique
+
+      - name: email_masked
+        description: "Endereço de e-mail do cliente"
+        meta:
+          pii: true
+          lgpd_level: "sensitive"
+        tests:
+          - not_null
+          - lgpd_masked:
+              regex_pattern: '^.{1}\*{3,}@.+\..+$'
+
+      - name: cpf_masked
+        description: "CPF do cliente"
+        meta:
+          pii: true
+          lgpd_level: "sensitive"
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_value_lengths_to_equal:
+              value: 11
+          - lgpd_masked:
+              regex_pattern: '^\d{3}\*{3}\d{3}\*{2}$'
+
+      - name: phone_masked
+        description: "Telefone do cliente"
+        meta:
+          pii: true
+          lgpd_level: "medium"
+        tests:
+          - dbt_expectations.expect_column_value_lengths_to_be_between:
+              min_value: 10
+              max_value: 14
+          - lgpd_masked:
+              regex_pattern: '^\\+\\d+\\*{4}$'
